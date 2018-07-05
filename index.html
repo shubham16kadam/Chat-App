@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+	<title>Chat Bot</title>
+	<style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { font: 13px Helvetica, Arial; }
+      form { background: #000; padding: 3px; position: fixed; bottom: 0; width: 100%; }
+      form input { border: 0 ; padding: 10px; width: 90%; margin-right: .5%; }
+      form button { width: 9%; background: rgb(130, 224, 255); border: none; padding: 10px; }
+      #messages { list-style-type: none; margin: 0; padding: 0;}
+      #messages li { padding: 5px 10px; width: 83%; }
+      #messages li:nth-child(odd) { background: #eee; }
+      #active{
+        position: absolute;
+        right : 0px;
+        top : 0px;
+        width : 200px;
+        height:606px;
+        background: lightgreen;
+      }
+      h1{
+        width:1200px;
+        background: powderblue;
+      }
+    </style>
+</head>
+<body>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.1/socket.io.js"></script>
+    <div>
+    <h1 id = 'username'></h1>
+    <div id = 'active'>
+      <ul id = "active-users">
+        
+      </ul>
+    </div>
+    <!--<input type="text" id="emailId"/>
+    <button id = 'getEmailId'>Email</button>-->
+    
+      <div>
+      <ul id="messages"></ul>
+      </div>
+      <div>
+      <form>
+      	<input type="text" id="msg" autocomplete="off"/>
+      	<button id = 'b1'>Send</button>
+      </form>
+      </div>
+    </div>
+    <script> 
+      $(document).ready(function(){
+        //alert('k');
+        var array1 = [];
+        var data = '';
+        var emailId = '';
+        var toWhom = '';
+        var sender = '';
+        var s = [];
+        var flag = 0;
+        var username = window.location.href;
+        username = username.split('/')[4];
+        document.getElementById('username').innerHTML = 'Welcome ' + username;
+    
+        var socket = io();
+        socket.on('broadcast', function(msg){
+          var array2 = [];
+         
+          var str = msg + '';
+          array1 = str.split(",");
+          var index = array1.indexOf(username);
+          sender = array1[index];
+          
+          array1.splice(index,1);
+          
+          $('.user').remove();
+          for(x in array1){
+            $("#active-users").append($('<li>',{id : "user" + x, class : "user", style : "list-style-position: inside",text : array1[x]}));
+          }
+          $("li").click(function() {
+            toWhom = $(this).text(); 
+            document.getElementById('username').innerHTML = toWhom;
+            flag = 0;
+          });
+        });
+        
+        $('form').submit(function(){
+          data = $('#msg').val();
+          var whom = document.getElementById('username').innerHTML; 
+            console.log(whom);
+            socket.emit('chat', data, whom, username);  
+          $('#msg').val('');
+            appender(0, data);
+            return false; 
+          });
+          
+        socket.on(2, function(msg, sender_core){
+          document.getElementById('username').innerHTML = sender_core;
+          appender(1, msg);
+        });
+
+      });
+
+      function getEmail(){
+        console.log($('#emailId').val());
+        return $('#emailId').val();
+      }
+      function appender(val, data){
+        var temp = '', class_name = '';
+        if(val == 0)
+        {
+          temp = 'right';
+          class_name = 'message1';
+
+        }
+        else{
+          temp = 'left';
+          class_name = 'message2';
+        }
+        $('<li>',{class : class_name, style : 'position : relative; top : 0%;', text : data }).prependTo('#messages');
+        $('.' + class_name).css('text-align', temp);
+        $('.' + class_name).css('list-style-position' , 'inside');
+      }
+    
+    </script>
+</body>
+</html>
